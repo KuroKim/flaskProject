@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% block title %}Главная{% endblock %}
+{% block content %}
+    <section class="search">
+        <input type="text" id="search-bar" placeholder="Поиск инструмента...">
+    </section>
+    <section class="tools-grid">
+        {% for tool in tools %}
+            <a href="{{ tool.url }}" class="tool-tile">
+                <span class="icon">{{ tool.icon }}</span>
+                <h2>{{ tool.name }}</h2>
+            </a>
+        {% endfor %}
+        <!-- Рекламный блок Яндекс.Директ -->
+        <div class="ad-block" style="width: 300px; height: 100px; background: #ccc;">Яндекс.Директ (300x100)</div>
+    </section>
+{% endblock %}

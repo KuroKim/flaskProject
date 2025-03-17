@@ -1,0 +1,194 @@
+{% extends "base.html" %}
+{% block title %}Конвертер величин{% endblock %}
+{% block content %}
+    <h1>Конвертер величин</h1>
+    <div class="converter">
+        <div class="converter-form">
+            <div class="unit-block">
+                <select id="category" onchange="updateUnits()">
+                    <option value="length">Длина</option>
+                    <option value="weight">Вес</option>
+                    <option value="volume">Объём</option>
+                    <option value="speed">Скорость</option>
+                </select>
+                <select id="from_unit">
+                    <!-- Опции будут добавлены через JS -->
+                </select>
+                <input type="number" id="from_value" step="0.01" value="" oninput="convertUnits(true)">
+            </div>
+            <span class="arrow">↔</span>
+            <div class="unit-block">
+                <select id="to_unit">
+                    <!-- Опции будут добавлены через JS -->
+                </select>
+                <input type="number" id="to_value" step="0.01" value="" oninput="convertUnits(false)">
+            </div>
+        </div>
+        <div class="controls">
+            <button onclick="clearFields()">Очистить</button>
+        </div>
+    </div>
+    <div class="history">
+        <h3>История конвертаций</h3>
+        <button class="clear-history" onclick="clearHistory()">Очистить историю</button>
+        <ul id="history-list"></ul>
+    </div>
+    <div class="ad-block" style="width: 320px; height: 50px; background: #ccc;">Яндекс.Директ (320x50)</div>
+
+    <script>
+        let fromValue = document.getElementById('from_value');
+        let toValue = document.getElementById('to_value');
+        let fromUnit = document.getElementById('from_unit');
+        let toUnit = document.getElementById('to_unit');
+        let category = document.getElementById('category');
+        let historyList = document.getElementById('history-list');
+        let debounceTimeout;
+
+        const units = {
+            length: {
+                meter: { name: 'Метры', factor: 1 },
+                kilometer: { name: 'Километры', factor: 0.001 },
+                mile: { name: 'Мили', factor: 0.000621371 },
+                foot: { name: 'Футы', factor: 3.28084 },
+                yard: { name: 'Ярды', factor: 1.09361 },
+                nautical_mile: { name: 'Морские мили', factor: 0.000539957 }
+            },
+            weight: {
+                kilogram: { name: 'Килограммы', factor: 1 },
+                gram: { name: 'Граммы', factor: 1000 },
+                ounce: { name: 'Унции', factor: 35.274 },
+                pound: { name: 'Фунты', factor: 2.20462 }
+            },
+            volume: {
+                liter: { name: 'Литры', factor: 1 },
+                gallon: { name: 'Галлоны', factor: 0.264172 },
+                pint: { name: 'Пинты', factor: 2.11338 }
+            },
+            speed: {
+                kmh: { name: 'км/ч', factor: 1 },
+                mph: { name: 'миль/ч', factor: 0.621371 },
+                knot: { name: 'Узлы', factor: 0.539957 }
+            }
+        };
+
+        function updateUnits() {
+            let selectedCategory = category.value;
+            let fromUnits = units[selectedCategory];
+            let toUnits = units[selectedCategory];
+
+            fromUnit.innerHTML = '';
+            toUnit.innerHTML = '';
+
+            for (let unit in fromUnits) {
+                let optionFrom = document.createElement('option');
+                optionFrom.value = unit;
+                optionFrom.textContent = fromUnits[unit].name;
+                fromUnit.appendChild(optionFrom);
+
+                let optionTo = document.createElement('option');
+                optionTo.value = unit;
+                optionTo.textContent = toUnits[unit].name;
+                toUnit.appendChild(optionTo);
+            }
+
+            if (fromUnit.options.length > 1) {
+                toUnit.value = fromUnit.options[1].value;
+            }
+
+            convertUnits(true);
+        }
+
+        function convertUnits(isFromInput) {
+            let fromVal = parseFloat(fromValue.value) || 0;
+            let toVal = parseFloat(toValue.value) || 0;
+            let selectedCategory = category.value;
+            let fromFactor = units[selectedCategory][fromUnit.value].factor;
+            let toFactor = units[selectedCategory][toUnit.value].factor;
+
+            if (isFromInput && fromVal !== 0) {
+                let valueInBase = fromVal / fromFactor;
+                let result = valueInBase * toFactor;
+                toValue.value = result.toFixed(4);
+            } else if (!isFromInput && toVal !== 0) {
+                let valueInBase = toVal / toFactor;
+                let result = valueInBase * fromFactor;
+                fromValue.value = result.toFixed(4);
+            }
+
+            if (isFromInput) toValue.classList.add('updated');
+            else fromValue.classList.add('updated');
+            setTimeout(() => {
+                toValue.classList.remove('updated');
+                fromValue.classList.remove('updated');
+            }, 300);
+
+            if (fromUnit.value === toUnit.value && (fromVal !== 0 || toVal !== 0)) {
+                let options = fromUnit.options;
+                let currentIndex = fromUnit.selectedIndex;
+                let nextIndex = (currentIndex + 1) % options.length;
+                toUnit.selectedIndex = nextIndex;
+                convertUnits(isFromInput);
+            }
+
+            clearTimeout(debounceTimeout);
+            debounceTimeout = setTimeout(() => {
+                if (isFromInput && fromVal !== 0) {
+                    let valueInBase = fromVal / fromFactor;
+                    let result = valueInBase * toFactor;
+                    let entry = `${fromVal} ${fromUnit.options[fromUnit.selectedIndex].text} = ${result.toFixed(4)} ${toUnit.options[toUnit.selectedIndex].text}`;
+                    addToHistory(entry);
+                    saveHistory(entry);
+                } else if (!isFromInput && toVal !== 0) {
+                    let valueInBase = toVal / toFactor;
+                    let result = valueInBase * fromFactor;
+                    let entry = `${toVal} ${toUnit.options[toUnit.selectedIndex].text} = ${result.toFixed(4)} ${fromUnit.options[fromUnit.selectedIndex].text}`;
+                    addToHistory(entry);
+                    saveHistory(entry);
+                }
+            }, 500);
+        }
+
+        function clearFields() {
+            fromValue.value = '';
+            toValue.value = '';
+            clearTimeout(debounceTimeout);
+        }
+
+        function addToHistory(entry) {
+            let li = document.createElement('li');
+            li.textContent = entry;
+            historyList.insertBefore(li, historyList.firstChild);
+            if (historyList.children.length > 10) {
+                historyList.removeChild(historyList.lastChild);
+            }
+        }
+
+        function saveHistory(entry) {
+            let history = JSON.parse(localStorage.getItem('converterHistory')) || [];
+            history.unshift(entry);
+            if (history.length > 10) history.pop();
+            localStorage.setItem('converterHistory', JSON.stringify(history));
+        }
+
+        function loadHistory() {
+            let history = JSON.parse(localStorage.getItem('converterHistory')) || [];
+            history.forEach(entry => {
+                let li = document.createElement('li');
+                li.textContent = entry;
+                historyList.appendChild(li);
+            });
+        }
+
+        function clearHistory() {
+            historyList.innerHTML = '';
+            localStorage.removeItem('converterHistory');
+        }
+
+        fromUnit.addEventListener('change', () => convertUnits(true));
+        toUnit.addEventListener('change', () => convertUnits(true));
+        category.addEventListener('change', updateUnits);
+
+        updateUnits();
+        loadHistory();
+    </script>
+{% endblock %}

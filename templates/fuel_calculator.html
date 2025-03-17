@@ -1,0 +1,176 @@
+{% extends "base.html" %}
+{% block title %}Калькулятор бензина{% endblock %}
+{% block content %}
+    <h1>Калькулятор бензина</h1>
+    <div class="fuel-calculator">
+        <div class="calculator-form">
+            <div class="input-block">
+                <label>Расстояние (км):</label>
+                <input type="number" id="distance" step="0.01" value="" oninput="calculateFuel()">
+            </div>
+            <div class="input-block">
+                <label>Расход (л/100 км):</label>
+                <input type="number" id="consumption" step="0.01" value="" oninput="calculateFuel()">
+            </div>
+            <div class="input-block">
+                <label>Цена за литр:</label>
+                <select id="currency">
+                    <option value="RUB">RUB</option>
+                    <option value="USD">USD</option>
+                    <option value="EUR">EUR</option>
+                </select>
+                <input type="number" id="price_per_liter" step="0.01" value="" oninput="calculateFuel()">
+            </div>
+            <div class="input-block">
+                <label>Общая стоимость:</label>
+                <select id="result_currency" onchange="updateResultCurrency()">
+                    <option value="RUB">RUB</option>
+                    <option value="USD">USD</option>
+                    <option value="EUR">EUR</option>
+                </select>
+                <input type="number" id="total_cost" step="0.01" value="" oninput="calculateDistance()">
+            </div>
+        </div>
+        <div class="controls">
+            <button onclick="clearFields()">Очистить</button>
+        </div>
+    </div>
+    <div class="history">
+        <h3>История расчётов</h3>
+        <button class="clear-history" onclick="clearHistory()">Очистить историю</button>
+        <ul id="history-list"></ul>
+    </div>
+    <div class="ad-block" style="width: 320px; height: 50px; background: #ccc;">Яндекс.Директ (320x50)</div>
+
+    <script>
+        let distance = document.getElementById('distance');
+        let consumption = document.getElementById('consumption');
+        let pricePerLiter = document.getElementById('price_per_liter');
+        let totalCost = document.getElementById('total_cost');
+        let currency = document.getElementById('currency');
+        let resultCurrency = document.getElementById('result_currency');
+        let historyList = document.getElementById('history-list');
+
+        const exchangeRates = {
+            RUB: 1,
+            USD: 96.0, // Курсы валют условные, можно обновить
+            EUR: 105.0
+        };
+
+        function updateResultCurrency() {
+            resultCurrency.value = currency.value;
+            calculateFuel();
+        }
+
+        function calculateFuel() {
+            let dist = parseFloat(distance.value) || 0;
+            let cons = parseFloat(consumption.value) || 0;
+            let price = parseFloat(pricePerLiter.value) || 0;
+            let fromCurrency = currency.value;
+            let toCurrency = resultCurrency.value;
+
+            if (dist !== 0 && cons !== 0 && price !== 0) {
+                // Расчёт: литры = (расстояние / 100) * расход
+                let liters = (dist / 100) * cons;
+                // Стоимость в исходной валюте
+                let cost = liters * price;
+                // Конвертация в целевую валюту
+                let costInBase = cost / exchangeRates[fromCurrency]; // В RUB
+                let finalCost = costInBase * exchangeRates[toCurrency];
+                totalCost.value = finalCost.toFixed(2);
+
+                let entry = `${dist} км, ${cons} л/100км, ${price} ${fromCurrency}/л = ${finalCost.toFixed(2)} ${toCurrency}`;
+                addToHistory(entry);
+                saveHistory(entry);
+            }
+
+            totalCost.classList.add('updated');
+            setTimeout(() => totalCost.classList.remove('updated'), 300);
+        }
+
+        function calculateDistance() {
+            let total = parseFloat(totalCost.value) || 0;
+            let cons = parseFloat(consumption.value) || 0;
+            let price = parseFloat(pricePerLiter.value) || 0;
+            let fromCurrency = currency.value;
+            let toCurrency = resultCurrency.value;
+
+            if (total !== 0 && cons !== 0 && price !== 0) {
+                // Обратный расчёт: литры = стоимость / цена за литр
+                let totalInBase = total / exchangeRates[toCurrency]; // В RUB
+                let totalInInputCurrency = totalInBase * exchangeRates[fromCurrency];
+                let liters = totalInInputCurrency / price;
+                // Расстояние = (литры / расход) * 100
+                let dist = (liters / cons) * 100;
+                distance.value = dist.toFixed(2);
+
+                let entry = `${total} ${toCurrency}, ${cons} л/100км, ${price} ${fromCurrency}/л = ${dist.toFixed(2)} км`;
+                addToHistory(entry);
+                saveHistory(entry);
+            }
+
+            distance.classList.add('updated');
+            setTimeout(() => distance.classList.remove('updated'), 300);
+        }
+
+        function clearFields() {
+            distance.value = '';
+            consumption.value = '';
+            pricePerLiter.value = '';
+            totalCost.value = '';
+        }
+
+        function addToHistory(entry) {
+            let li = document.createElement('li');
+            li.textContent = entry;
+            historyList.insertBefore(li, historyList.firstChild);
+            if (historyList.children.length > 10) {
+                historyList.removeChild(historyList.lastChild);
+            }
+        }
+
+        function saveHistory(entry) {
+            let history = JSON.parse(localStorage.getItem('fuelHistory')) || [];
+            history.unshift(entry);
+            if (history.length > 10) history.pop();
+            localStorage.setItem('fuelHistory', JSON.stringify(history));
+        }
+
+        function loadHistory() {
+            let history = JSON.parse(localStorage.getItem('fuelHistory')) || [];
+            history.forEach(entry => {
+                let li = document.createElement('li');
+                li.textContent = entry;
+                historyList.appendChild(li);
+            });
+        }
+
+        function clearHistory() {
+            historyList.innerHTML = '';
+            localStorage.removeItem('fuelHistory');
+        }
+
+        // Слушатели событий
+        currency.addEventListener('change', () => {
+            resultCurrency.value = currency.value;
+            calculateFuel();
+        });
+
+        // Поддержка клавиатуры
+        distance.addEventListener('keydown', (event) => {
+            if (event.key === 'Enter') calculateFuel();
+        });
+        consumption.addEventListener('keydown', (event) => {
+            if (event.key === 'Enter') calculateFuel();
+        });
+        pricePerLiter.addEventListener('keydown', (event) => {
+            if (event.key === 'Enter') calculateFuel();
+        });
+        totalCost.addEventListener('keydown', (event) => {
+            if (event.key === 'Enter') calculateDistance();
+        });
+
+        // Инициализация
+        loadHistory();
+    </script>
+{% endblock %}

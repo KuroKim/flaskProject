@@ -1,0 +1,226 @@
+{% extends "base.html" %}
+{% block title %}Калькулятор онлайн{% endblock %}
+{% block content %}
+    <h1>Калькулятор онлайн</h1>
+    <div class="calculator">
+        <input type="text" id="display" readonly>
+        <div class="buttons">
+            <button onclick="clearDisplay()">C</button>
+            <button class="special" onclick="appendToDisplay('%')">%</button>
+            <button class="special" onclick="square()">x²</button>
+            <button class="special" onclick="sqrt()">√</button>
+            <button onclick="appendToDisplay('7')">7</button>
+            <button onclick="appendToDisplay('8')">8</button>
+            <button onclick="appendToDisplay('9')">9</button>
+            <button class="operator" onclick="appendToDisplay('/')">÷</button>
+            <button onclick="appendToDisplay('4')">4</button>
+            <button onclick="appendToDisplay('5')">5</button>
+            <button onclick="appendToDisplay('6')">6</button>
+            <button class="operator" onclick="appendToDisplay('*')">×</button>
+            <button onclick="appendToDisplay('1')">1</button>
+            <button onclick="appendToDisplay('2')">2</button>
+            <button onclick="appendToDisplay('3')">3</button>
+            <button class="operator" onclick="appendToDisplay('-')">-</button>
+            <button onclick="appendToDisplay('0')">0</button>
+            <button onclick="appendToDisplay('.')">.</button>
+            <button class="special" onclick="appendToDisplay('^')">^</button>
+            <button class="operator" onclick="appendToDisplay('+')">+</button>
+            <button onclick="appendToDisplay('(')">(</button>
+            <button onclick="appendToDisplay(')')">)</button>
+            <button class="delete" onclick="deleteLast()">⌫</button>
+            <button class="equals" onclick="calculate()">=</button>
+        </div>
+    </div>
+    <div class="history">
+        <h3>История вычислений</h3>
+        <button class="clear-history" onclick="clearHistory()">Очистить историю</button>
+        <ul id="history-list"></ul>
+    </div>
+    <div class="ad-block" style="width: 320px; height: 50px; background: #ccc;">Яндекс.Директ (320x50)</div>
+
+    <script src="{{ url_for('static', filename='js/math.min.js') }}"></script>
+    <script>
+        let display = document.getElementById('display');
+        let historyList = document.getElementById('history-list');
+        let lastResult = null;
+        let shouldClearOnNextInput = false;
+
+        function appendToDisplay(value) {
+            // Проверяем, нужно ли очистить поле перед новым вводом
+            if (shouldClearOnNextInput && /[0-9.]/.test(value)) {
+                display.value = '';
+                shouldClearOnNextInput = false;
+            }
+            // Если вводится оператор после результата, продолжаем с ним
+            else if (shouldClearOnNextInput && /[+*/^-]/.test(value) && lastResult !== null) {
+                display.value = lastResult + value;
+                shouldClearOnNextInput = false;
+                return; // Прерываем выполнение, чтобы избежать двойного добавления
+            }
+            display.value += value;
+        }
+
+        function clearDisplay() {
+            display.value = '';
+            lastResult = null;
+            shouldClearOnNextInput = false;
+            display.classList.remove('result-highlight');
+        }
+
+        function deleteLast() {
+            display.value = display.value.slice(0, -1);
+            shouldClearOnNextInput = false;
+            display.classList.remove('result-highlight');
+        }
+
+        function clearHistory() {
+            historyList.innerHTML = '';
+            localStorage.removeItem('calcHistory');
+        }
+
+        function calculate() {
+            try {
+                let expression = display.value.replace('×', '*').replace('÷', '/');
+                let result = math.evaluate(expression);
+                if (!isFinite(result) || isNaN(result)) throw "Ошибка";
+                display.value = result;
+                lastResult = result;
+                let entry = `${expression} = ${result}`;
+                addToHistory(entry);
+                saveHistory(entry);
+                shouldClearOnNextInput = true;
+                display.classList.add('result-highlight');
+                setTimeout(() => display.classList.remove('result-highlight'), 1000);
+            } catch (e) {
+                display.value = "Ошибка";
+                setTimeout(clearDisplay, 1000);
+            }
+        }
+
+        function square() {
+            try {
+                let value = math.evaluate(display.value);
+                let result = math.pow(value, 2);
+                display.value = result;
+                lastResult = result;
+                let entry = `${value}² = ${result}`;
+                addToHistory(entry);
+                saveHistory(entry);
+                shouldClearOnNextInput = true;
+                display.classList.add('result-highlight');
+                setTimeout(() => display.classList.remove('result-highlight'), 1000);
+            } catch (e) {
+                display.value = "Ошибка";
+                setTimeout(clearDisplay, 1000);
+            }
+        }
+
+        function sqrt() {
+            try {
+                let value = math.evaluate(display.value);
+                if (value < 0) throw "Ошибка";
+                let result = math.sqrt(value);
+                display.value = result;
+                lastResult = result;
+                let entry = `√${value} = ${result}`;
+                addToHistory(entry);
+                saveHistory(entry);
+                shouldClearOnNextInput = true;
+                display.classList.add('result-highlight');
+                setTimeout(() => display.classList.remove('result-highlight'), 1000);
+            } catch (e) {
+                display.value = "Ошибка";
+                setTimeout(clearDisplay, 1000);
+            }
+        }
+
+        function addToHistory(entry) {
+            let li = document.createElement('li');
+            li.textContent = entry;
+            historyList.insertBefore(li, historyList.firstChild);
+            if (historyList.children.length > 10) {
+                historyList.removeChild(historyList.lastChild);
+            }
+        }
+
+        function saveHistory(entry) {
+            let history = JSON.parse(localStorage.getItem('calcHistory')) || [];
+            history.unshift(entry);
+            if (history.length > 10) history.pop();
+            localStorage.setItem('calcHistory', JSON.stringify(history));
+        }
+
+        function loadHistory() {
+            let history = JSON.parse(localStorage.getItem('calcHistory')) || [];
+            history.forEach(entry => {
+                let li = document.createElement('li');
+                li.textContent = entry;
+                historyList.appendChild(li);
+            });
+        }
+
+        document.addEventListener('keydown', (event) => {
+            if (/[0-9]/.test(event.key)) {
+                if (shouldClearOnNextInput) {
+                    display.value = '';
+                    shouldClearOnNextInput = false;
+                }
+                appendToDisplay(event.key);
+            }
+            if (event.key === '+') {
+                if (shouldClearOnNextInput && lastResult !== null) {
+                    display.value = lastResult + '+';
+                    shouldClearOnNextInput = false;
+                } else {
+                    appendToDisplay('+');
+                }
+            }
+            if (event.key === '-') {
+                if (shouldClearOnNextInput && lastResult !== null) {
+                    display.value = lastResult + '-';
+                    shouldClearOnNextInput = false;
+                } else {
+                    appendToDisplay('-');
+                }
+            }
+            if (event.key === '*') {
+                if (shouldClearOnNextInput && lastResult !== null) {
+                    display.value = lastResult + '*';
+                    shouldClearOnNextInput = false;
+                } else {
+                    appendToDisplay('×');
+                }
+            }
+            if (event.key === '/') {
+                if (shouldClearOnNextInput && lastResult !== null) {
+                    display.value = lastResult + '/';
+                    shouldClearOnNextInput = false;
+                } else {
+                    appendToDisplay('÷');
+                }
+            }
+            if (event.key === '.') {
+                if (shouldClearOnNextInput) {
+                    display.value = '';
+                    shouldClearOnNextInput = false;
+                }
+                appendToDisplay('.');
+            }
+            if (event.key === '^') {
+                if (shouldClearOnNextInput && lastResult !== null) {
+                    display.value = lastResult + '^';
+                    shouldClearOnNextInput = false;
+                } else {
+                    appendToDisplay('^');
+                }
+            }
+            if (event.key === '(') appendToDisplay('(');
+            if (event.key === ')') appendToDisplay(')');
+            if (event.key === 'Enter') calculate();
+            if (event.key === 'Backspace') deleteLast();
+            if (event.key === 'Escape') clearDisplay();
+        });
+
+        loadHistory();
+    </script>
+{% endblock %}

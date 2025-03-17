@@ -1,0 +1,165 @@
+{% extends "base.html" %}
+{% block title %}Конвертер давления BAR ↔ PSI{% endblock %}
+{% block content %}
+    <h1>Конвертер давления BAR ↔ PSI</h1>
+    <div class="pressure-converter">
+        <div class="converter-form">
+            <div class="unit-block">
+                <select id="from_unit" onchange="clearFieldsOnUnitChange()">
+                    <option value="bar">BAR</option>
+                    <option value="psi">PSI</option>
+                    <option value="atm">ATM</option>
+                    <option value="kpa">kPa</option>
+                    <option value="mmhg">mmHg</option>
+                </select>
+                <input type="number" id="from_value" step="0.01" value="" oninput="convertPressure(true)">
+            </div>
+            <span class="arrow">↔</span>
+            <div class="unit-block">
+                <select id="to_unit" onchange="clearFieldsOnUnitChange()">
+                    <option value="psi">PSI</option>
+                    <option value="bar">BAR</option>
+                    <option value="atm">ATM</option>
+                    <option value="kpa">kPa</option>
+                    <option value="mmhg">mmHg</option>
+                </select>
+                <input type="number" id="to_value" step="0.01" value="" oninput="convertPressure(false)">
+            </div>
+        </div>
+        <div class="controls">
+            <button onclick="clearFields()">Очистить</button>
+        </div>
+        <div class="presets">
+            <button onclick="setPreset(2, 'bar')">2 BAR</button>
+            <button onclick="setPreset(30, 'psi')">30 PSI</button>
+            <button onclick="setPreset(1, 'atm')">1 ATM</button>
+        </div>
+        <div class="info">
+            <h3>О единицах давления</h3>
+            <p>1 BAR = 14.5038 PSI | 1 PSI = 0.0689476 BAR</p>
+            <p>1 BAR = 100 kPa | 1 ATM = 1.01325 BAR</p>
+            <p>1 mmHg = 0.00133322 BAR</p>
+        </div>
+    </div>
+    <div class="history">
+        <h3>История конвертаций</h3>
+        <button class="clear-history" onclick="clearHistory()">Очистить историю</button>
+        <ul id="history-list"></ul>
+    </div>
+    <div class="ad-block" style="width: 320px; height: 50px; background: #ccc;">Яндекс.Директ (320x50)</div>
+
+    <script>
+        let fromValue = document.getElementById('from_value');
+        let toValue = document.getElementById('to_value');
+        let fromUnit = document.getElementById('from_unit');
+        let toUnit = document.getElementById('to_unit');
+        let historyList = document.getElementById('history-list');
+        let debounceTimeout;
+
+        const conversionFactors = {
+            bar: 1,
+            psi: 0.0689476,
+            atm: 0.986923,
+            kpa: 0.01,
+            mmhg: 750.061
+        };
+
+        function convertPressure(isFromInput) {
+            let fromVal = parseFloat(fromValue.value) || 0;
+            let toVal = parseFloat(toValue.value) || 0;
+
+            if (isFromInput && fromVal !== 0) {
+                let valueInBar = fromVal / (1 / conversionFactors[fromUnit.value]);
+                let result = valueInBar * (1 / conversionFactors[toUnit.value]);
+                toValue.value = result.toFixed(4);
+            } else if (!isFromInput && toVal !== 0) {
+                let valueInBar = toVal / (1 / conversionFactors[toUnit.value]);
+                let result = valueInBar * (1 / conversionFactors[fromUnit.value]);
+                fromValue.value = result.toFixed(4);
+            }
+
+            if (isFromInput) toValue.classList.add('updated');
+            else fromValue.classList.add('updated');
+            setTimeout(() => {
+                toValue.classList.remove('updated');
+                fromValue.classList.remove('updated');
+            }, 300);
+
+            if (fromUnit.value === toUnit.value && (fromVal !== 0 || toVal !== 0)) {
+                let units = Object.keys(conversionFactors);
+                let currentIndex = units.indexOf(fromUnit.value);
+                let nextIndex = (currentIndex + 1) % units.length;
+                toUnit.value = units[nextIndex];
+                convertPressure(isFromInput);
+            }
+
+            clearTimeout(debounceTimeout);
+            debounceTimeout = setTimeout(() => {
+                if (isFromInput && fromVal !== 0) {
+                    let valueInBar = fromVal / (1 / conversionFactors[fromUnit.value]);
+                    let result = valueInBar * (1 / conversionFactors[toUnit.value]);
+                    let entry = `${fromVal} ${fromUnit.value} = ${result.toFixed(4)} ${toUnit.value}`;
+                    addToHistory(entry);
+                    saveHistory(entry);
+                } else if (!isFromInput && toVal !== 0) {
+                    let valueInBar = toVal / (1 / conversionFactors[toUnit.value]);
+                    let result = valueInBar * (1 / conversionFactors[fromUnit.value]);
+                    let entry = `${toVal} ${toUnit.value} = ${result.toFixed(4)} ${fromUnit.value}`;
+                    addToHistory(entry);
+                    saveHistory(entry);
+                }
+            }, 500);
+        }
+
+        function setPreset(value, unit) {
+            fromValue.value = value;
+            fromUnit.value = unit;
+            convertPressure(true);
+        }
+
+        function clearFields() {
+            fromValue.value = '';
+            toValue.value = '';
+            clearTimeout(debounceTimeout);
+        }
+
+        function clearFieldsOnUnitChange() {
+            fromValue.value = '';
+            toValue.value = '';
+            clearTimeout(debounceTimeout);
+            convertPressure(true);
+        }
+
+        function addToHistory(entry) {
+            let li = document.createElement('li');
+            li.textContent = entry;
+            historyList.insertBefore(li, historyList.firstChild);
+            if (historyList.children.length > 10) {
+                historyList.removeChild(historyList.lastChild);
+            }
+        }
+
+        function saveHistory(entry) {
+            let history = JSON.parse(localStorage.getItem('pressureHistory')) || [];
+            history.unshift(entry);
+            if (history.length > 10) history.pop();
+            localStorage.setItem('pressureHistory', JSON.stringify(history));
+        }
+
+        function loadHistory() {
+            let history = JSON.parse(localStorage.getItem('pressureHistory')) || [];
+            history.forEach(entry => {
+                let li = document.createElement('li');
+                li.textContent = entry;
+                historyList.appendChild(li);
+            });
+        }
+
+        function clearHistory() {
+            historyList.innerHTML = '';
+            localStorage.removeItem('pressureHistory');
+        }
+
+        loadHistory();
+    </script>
+{% endblock %}
