@@ -62,6 +62,7 @@
 
         // Используем курсы, переданные сервером
         let exchangeRates = {{ exchange_rates | tojson }};
+        console.log("Курсы валют, переданные в JavaScript:", exchangeRates);
 
         // Функция для форматирования чисел
         function formatNumber(value, currency) {
@@ -114,8 +115,10 @@
                 } else {
                     // Конвертация в RUB
                     let costInRUB = fromCurrency === 'RUB' ? costInBase : costInBase * exchangeRates[fromCurrency];
+                    console.log(`costInRUB: ${costInRUB}, fromCurrency: ${fromCurrency}, exchangeRates[${fromCurrency}]: ${exchangeRates[fromCurrency]}`);
                     // Конвертация из RUB в итоговую валюту
                     finalCost = costInRUB / (toCurrency === 'RUB' ? 1 : exchangeRates[toCurrency]);
+                    console.log(`finalCost: ${finalCost}, toCurrency: ${toCurrency}, exchangeRates[${toCurrency}]: ${exchangeRates[toCurrency]}`);
                 }
 
                 totalCost.value = finalCost.toFixed(2);
@@ -123,9 +126,18 @@
                 totalCost.classList.add('updated');
                 setTimeout(() => totalCost.classList.remove('updated'), 300);
 
+                // Сохраняем значения для истории
+                const historyDist = dist;
+                const historyCons = cons;
+                const historyPrice = price;
+                const historyFinalCost = finalCost;
+                const historyFromCurrency = fromCurrency;
+                const historyToCurrency = toCurrency;
+
                 clearTimeout(debounceTimeout);
                 debounceTimeout = setTimeout(() => {
-                    let entry = `${formatNumber(dist)} км, ${formatNumber(cons)} л/100км, ${formatNumber(price, fromCurrency)}/л = ${formatNumber(finalCost, toCurrency)}`;
+                    console.log(`Запись в историю: dist=${historyDist}, cons=${historyCons}, price=${historyPrice}, finalCost=${historyFinalCost}, fromCurrency=${historyFromCurrency}, toCurrency=${historyToCurrency}`);
+                    let entry = `${formatNumber(historyDist)} км, ${formatNumber(historyCons)} л/100км, ${formatNumber(historyPrice, historyFromCurrency)}/л = ${formatNumber(historyFinalCost, historyToCurrency)}`;
                     addToHistory(entry);
                     saveHistory(entry);
                 }, 500);
@@ -150,8 +162,10 @@
                 } else {
                     // Конвертация в RUB
                     let costInRUB = fromCurrency === 'RUB' ? costInBase : costInBase * exchangeRates[fromCurrency];
+                    console.log(`costInRUB: ${costInRUB}, fromCurrency: ${fromCurrency}, exchangeRates[${fromCurrency}]: ${exchangeRates[fromCurrency]}`);
                     // Конвертация из RUB в итоговую валюту
                     finalCost = costInRUB / (toCurrency === 'RUB' ? 1 : exchangeRates[toCurrency]);
+                    console.log(`finalCost: ${finalCost}, toCurrency: ${toCurrency}, exchangeRates[${toCurrency}]: ${exchangeRates[toCurrency]}`);
                 }
 
                 totalCost.value = finalCost.toFixed(2);
@@ -159,10 +173,18 @@
                 totalCost.classList.add('updated');
                 setTimeout(() => totalCost.classList.remove('updated'), 300);
 
-                // Добавляем запись в историю при смене валюты
+                // Сохраняем значения для истории
+                const historyDist = dist;
+                const historyCons = cons;
+                const historyPrice = price;
+                const historyFinalCost = finalCost;
+                const historyFromCurrency = fromCurrency;
+                const historyToCurrency = toCurrency;
+
                 clearTimeout(debounceTimeout);
                 debounceTimeout = setTimeout(() => {
-                    let entry = `${formatNumber(dist)} км, ${formatNumber(cons)} л/100км, ${formatNumber(price, fromCurrency)}/л = ${formatNumber(finalCost, toCurrency)}`;
+                    console.log(`Запись в историю: dist=${historyDist}, cons=${historyCons}, price=${historyPrice}, finalCost=${historyFinalCost}, fromCurrency=${historyFromCurrency}, toCurrency=${historyToCurrency}`);
+                    let entry = `${formatNumber(historyDist)} км, ${formatNumber(historyCons)} л/100км, ${formatNumber(historyPrice, historyFromCurrency)}/л = ${formatNumber(historyFinalCost, historyToCurrency)}`;
                     addToHistory(entry);
                     saveHistory(entry);
                 }, 500);
@@ -195,6 +217,8 @@
 
         function loadHistory() {
             let history = JSON.parse(localStorage.getItem('fuelHistory')) || [];
+            console.log("Загруженная история из localStorage:", history);
+            historyList.innerHTML = ''; // Очищаем список перед загрузкой
             history.forEach(entry => {
                 let li = document.createElement('li');
                 li.textContent = entry;
@@ -205,6 +229,7 @@
         function clearHistory() {
             historyList.innerHTML = '';
             localStorage.removeItem('fuelHistory');
+            console.log("История очищена, localStorage['fuelHistory']:", localStorage.getItem('fuelHistory'));
         }
 
         loadHistory();
