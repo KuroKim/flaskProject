@@ -109,6 +109,7 @@
             let fromCurr = fromCurrency.value;
             let toCurr = toCurrency.value;
 
+            // Блокируем конвертацию, если валюты совпадают
             if (fromCurr === toCurr && (fromVal !== 0 || toVal !== 0)) {
                 let options = fromCurrency.options;
                 let currentIndex = fromCurrency.selectedIndex;
@@ -117,20 +118,27 @@
                 toCurr = toCurrency.value;
             }
 
+            let result;
             if (isFromInput && fromVal !== 0) {
-                // Конвертация в RUB
+                // Конвертация из fromVal в toCurr
                 let valueInRUB = fromCurr === 'RUB' ? fromVal : fromVal * exchangeRates[fromCurr];
-                // Конвертация из RUB в целевую валюту
-                let result = valueInRUB / (toCurr === 'RUB' ? 1 : exchangeRates[toCurr]);
+                result = valueInRUB / (toCurr === 'RUB' ? 1 : exchangeRates[toCurr]);
+                toValue.value = result.toFixed(2);
+
+                toValue.classList.add('updated');
+                setTimeout(() => toValue.classList.remove('updated'), 300);
+            } else if (!isFromInput && fromVal !== 0) {
+                // Смена to_currency — пересчитываем только toValue на основе fromVal
+                let valueInRUB = fromCurr === 'RUB' ? fromVal : fromVal * exchangeRates[fromCurr];
+                result = valueInRUB / (toCurr === 'RUB' ? 1 : exchangeRates[toCurr]);
                 toValue.value = result.toFixed(2);
 
                 toValue.classList.add('updated');
                 setTimeout(() => toValue.classList.remove('updated'), 300);
             } else if (!isFromInput && toVal !== 0) {
-                // Конвертация в RUB
+                // Конвертация из toVal в fromCurr (только при вводе в to_value)
                 let valueInRUB = toCurr === 'RUB' ? toVal : toVal * exchangeRates[toCurr];
-                // Конвертация из RUB в исходную валюту
-                let result = valueInRUB / (fromCurr === 'RUB' ? 1 : exchangeRates[fromCurr]);
+                result = valueInRUB / (fromCurr === 'RUB' ? 1 : exchangeRates[fromCurr]);
                 fromValue.value = result.toFixed(2);
 
                 fromValue.classList.add('updated');
@@ -139,16 +147,8 @@
 
             clearTimeout(debounceTimeout);
             debounceTimeout = setTimeout(() => {
-                if (isFromInput && fromVal !== 0) {
-                    let valueInRUB = fromCurr === 'RUB' ? fromVal : fromVal * exchangeRates[fromCurr];
-                    let result = valueInRUB / (toCurr === 'RUB' ? 1 : exchangeRates[toCurr]);
-                    let entry = `${formatNumber(fromVal, fromCurr)} = ${formatNumber(result, toCurr)}`;
-                    addToHistory(entry);
-                    saveHistory(entry);
-                } else if (!isFromInput && toVal !== 0) {
-                    let valueInRUB = toCurr === 'RUB' ? toVal : toVal * exchangeRates[toCurr];
-                    let result = valueInRUB / (fromCurr === 'RUB' ? 1 : exchangeRates[fromCurr]);
-                    let entry = `${formatNumber(toVal, toCurr)} = ${formatNumber(result, fromCurr)}`;
+                if (fromVal !== 0 && toVal !== 0) {
+                    let entry = `${formatNumber(fromVal, fromCurr)} = ${formatNumber(toVal, toCurr)}`;
                     addToHistory(entry);
                     saveHistory(entry);
                 }
