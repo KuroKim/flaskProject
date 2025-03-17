@@ -55,6 +55,28 @@
         // Используем курсы, переданные сервером
         let exchangeRates = {{ exchange_rates | tojson }};
 
+        // Функция для форматирования чисел
+        function formatNumber(value, currency) {
+            // Форматируем число с разделителями тысяч и фиксированным количеством знаков
+            const formattedValue = value.toLocaleString('ru-RU', {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2
+            });
+
+            // Добавляем символ валюты (для цены и общей стоимости)
+            if (currency) {
+                const currencySymbols = {
+                    'RUB': '₽',
+                    'USD': '$',
+                    'EUR': '€'
+                };
+                const symbol = currencySymbols[currency] || currency;
+                return `${formattedValue} ${symbol}`;
+            }
+            // Для расстояния и расхода возвращаем только число
+            return formattedValue;
+        }
+
         function updateResultCurrency() {
             // Очистка только цены за литр при смене валюты
             pricePerLiter.value = '';
@@ -91,7 +113,7 @@
 
                 clearTimeout(debounceTimeout);
                 debounceTimeout = setTimeout(() => {
-                    let entry = `${dist} км, ${cons} л/100км, ${price} ${fromCurrency}/л = ${finalCost.toFixed(2)} ${toCurrency}`;
+                    let entry = `${formatNumber(dist)} км, ${formatNumber(cons)} л/100км, ${formatNumber(price, fromCurrency)}/л = ${formatNumber(finalCost, toCurrency)}`;
                     addToHistory(entry);
                     saveHistory(entry);
                 }, 500);
@@ -124,6 +146,14 @@
 
                 totalCost.classList.add('updated');
                 setTimeout(() => totalCost.classList.remove('updated'), 300);
+
+                // Добавляем запись в историю при смене валюты
+                clearTimeout(debounceTimeout);
+                debounceTimeout = setTimeout(() => {
+                    let entry = `${formatNumber(dist)} км, ${formatNumber(cons)} л/100км, ${formatNumber(price, fromCurrency)}/л = ${formatNumber(finalCost, toCurrency)}`;
+                    addToHistory(entry);
+                    saveHistory(entry);
+                }, 500);
             }
         }
 
