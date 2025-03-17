@@ -7,8 +7,35 @@ from tools.converter import converter_bp
 from tools.weather import weather_bp
 from tools.qr_code import qr_code_bp
 from tools.timer import timer_bp
+import requests
+from cachetools import TTLCache
 
 app = Flask(__name__)
+
+# Настройка кэша с TTL (Time To Live) — 1 час
+cache = TTLCache(maxsize=1, ttl=3600)  # 3600 секунд = 1 час
+
+
+def get_exchange_rates():
+    if 'exchange_rates' not in cache:
+        try:
+            response = requests.get('https://www.cbr-xml-daily.ru/daily_json.js')
+            response.raise_for_status()
+            data = response.json()
+            rates = {
+                'USD': data['Valute']['USD']['Value'] / data['Valute']['USD']['Nominal'],
+                'EUR': data['Valute']['EUR']['Value'] / data['Valute']['EUR']['Nominal'],
+                'RUB': 1.0
+            }
+            cache['exchange_rates'] = rates
+            print(f"Курсы валют обновлены: {rates}")
+        except Exception as e:
+            print(f"Ошибка загрузки курсов: {e}")
+            # Условные курсы на случай ошибки
+            rates = {'USD': 96.0, 'EUR': 105.0, 'RUB': 1.0}
+            cache['exchange_rates'] = rates
+    return cache['exchange_rates']
+
 
 # Регистрация Blueprint'ов
 app.register_blueprint(calculator_bp)
