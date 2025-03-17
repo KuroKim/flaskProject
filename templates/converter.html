@@ -95,6 +95,11 @@
                 toUnit.value = fromUnit.options[1].value;
             }
 
+            // Очистка полей при смене категории
+            fromValue.value = '';
+            toValue.value = '';
+            clearTimeout(debounceTimeout);
+
             convertUnits(true);
         }
 
@@ -186,7 +191,6 @@
 
         fromUnit.addEventListener('change', () => convertUnits(true));
         toUnit.addEventListener('change', () => convertUnits(true));
-        category.addEventListener('change', updateUnits);
 
         updateUnits();
         loadHistory();
