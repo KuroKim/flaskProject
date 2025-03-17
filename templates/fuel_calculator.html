@@ -72,10 +72,18 @@
             if (dist !== 0 && cons !== 0 && price !== 0) {
                 let liters = (dist / 100) * cons;
                 let costInBase = liters * price; // Стоимость в валюте цены за литр
-                // Конвертация в RUB (базовую валюту)
-                let costInRUB = costInBase * (fromCurrency === 'RUB' ? 1 : 1 / exchangeRates[fromCurrency]);
-                // Конвертация в итоговую валюту (деление на курс целевой валюты)
-                let finalCost = costInRUB / (toCurrency === 'RUB' ? 1 : exchangeRates[toCurrency]);
+                let finalCost;
+
+                // Если исходная и целевая валюты совпадают, возвращаем стоимость без конвертации
+                if (fromCurrency === toCurrency) {
+                    finalCost = costInBase;
+                } else {
+                    // Конвертация в RUB
+                    let costInRUB = fromCurrency === 'RUB' ? costInBase : costInBase * exchangeRates[fromCurrency];
+                    // Конвертация из RUB в итоговую валюту
+                    finalCost = costInRUB / (toCurrency === 'RUB' ? 1 : exchangeRates[toCurrency]);
+                }
+
                 totalCost.value = finalCost.toFixed(2);
 
                 totalCost.classList.add('updated');
@@ -100,10 +108,18 @@
             if (dist !== 0 && cons !== 0 && price !== 0) {
                 let liters = (dist / 100) * cons;
                 let costInBase = liters * price; // Стоимость в валюте цены за литр
-                // Конвертация в RUB
-                let costInRUB = costInBase * (fromCurrency === 'RUB' ? 1 : 1 / exchangeRates[fromCurrency]);
-                // Конвертация в итоговую валюту (деление на курс целевой валюты)
-                let finalCost = costInRUB / (toCurrency === 'RUB' ? 1 : exchangeRates[toCurrency]);
+                let finalCost;
+
+                // Если исходная и целевая валюты совпадают, возвращаем стоимость без конвертации
+                if (fromCurrency === toCurrency) {
+                    finalCost = costInBase;
+                } else {
+                    // Конвертация в RUB
+                    let costInRUB = fromCurrency === 'RUB' ? costInBase : costInBase * exchangeRates[fromCurrency];
+                    // Конвертация из RUB в итоговую валюту
+                    finalCost = costInRUB / (toCurrency === 'RUB' ? 1 : exchangeRates[toCurrency]);
+                }
+
                 totalCost.value = finalCost.toFixed(2);
 
                 totalCost.classList.add('updated');

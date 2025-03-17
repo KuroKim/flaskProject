@@ -4,10 +4,9 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="ea3c1036-f1f3-4597-bca1-03c1969ad681" name="Changes" comment="fuel calc redacted">
-      <change beforePath="$PROJECT_DIR$/app.py" beforeDir="false" afterPath="$PROJECT_DIR$/app.py" afterDir="false" />
+    <list default="true" id="ea3c1036-f1f3-4597-bca1-03c1969ad681" name="Changes" comment="fuel calc again">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/templates/fuel_calculator.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/fuel_calculator.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/tools/fuel_calculator.py" beforeDir="false" afterPath="$PROJECT_DIR$/tools/fuel_calculator.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -135,7 +134,7 @@
       <updated>1741936789309</updated>
       <workItem from="1741936790688" duration="14732000" />
       <workItem from="1742184310155" duration="3138000" />
-      <workItem from="1742187462347" duration="2682000" />
+      <workItem from="1742187462347" duration="3740000" />
     </task>
     <task id="LOCAL-00001" summary="init">
       <option name="closed" value="true" />
@@ -161,7 +160,23 @@
       <option name="project" value="LOCAL" />
       <updated>1742188354605</updated>
     </task>
-    <option name="localTasksCounter" value="4" />
+    <task id="LOCAL-00004" summary="fuel calc again">
+      <option name="closed" value="true" />
+      <created>1742190258319</created>
+      <option name="number" value="00004" />
+      <option name="presentableId" value="LOCAL-00004" />
+      <option name="project" value="LOCAL" />
+      <updated>1742190258319</updated>
+    </task>
+    <task id="LOCAL-00005" summary="fuel calc again">
+      <option name="closed" value="true" />
+      <created>1742190266417</created>
+      <option name="number" value="00005" />
+      <option name="presentableId" value="LOCAL-00005" />
+      <option name="project" value="LOCAL" />
+      <updated>1742190266417</updated>
+    </task>
+    <option name="localTasksCounter" value="6" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -171,9 +186,10 @@
     <MESSAGE value="init" />
     <MESSAGE value="+++" />
     <MESSAGE value="fuel calc redacted" />
-    <option name="LAST_COMMIT_MESSAGE" value="fuel calc redacted" />
+    <MESSAGE value="fuel calc again" />
+    <option name="LAST_COMMIT_MESSAGE" value="fuel calc again" />
   </component>
   <component name="com.intellij.coverage.CoverageDataManagerImpl">
-    <SUITE FILE_PATH="coverage/flaskProject$flaskProject.coverage" NAME="flaskProject Coverage Results" MODIFIED="1742189854451" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="" />
+    <SUITE FILE_PATH="coverage/flaskProject$flaskProject.coverage" NAME="flaskProject Coverage Results" MODIFIED="1742190715776" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="" />
   </component>
 </project>
