@@ -25,6 +25,8 @@ def get_exchange_rates():
             rates = {
                 'USD': data['Valute']['USD']['Value'] / data['Valute']['USD']['Nominal'],
                 'EUR': data['Valute']['EUR']['Value'] / data['Valute']['EUR']['Nominal'],
+                'GBP': data['Valute']['GBP']['Value'] / data['Valute']['GBP']['Nominal'],
+                'CNY': data['Valute']['CNY']['Value'] / data['Valute']['CNY']['Nominal'],
                 'RUB': 1.0
             }
             cache['exchange_rates'] = rates
@@ -32,7 +34,13 @@ def get_exchange_rates():
         except Exception as e:
             print(f"Ошибка загрузки курсов: {e}")
             # Условные курсы на случай ошибки
-            rates = {'USD': 96.0, 'EUR': 105.0, 'RUB': 1.0}
+            rates = {
+                'USD': 96.0,
+                'EUR': 105.0,
+                'GBP': 125.0,
+                'CNY': 13.5,
+                'RUB': 1.0
+            }
             cache['exchange_rates'] = rates
     return cache['exchange_rates']
 
