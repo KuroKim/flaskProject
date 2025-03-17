@@ -27,6 +27,10 @@ def get_exchange_rates():
                 'EUR': data['Valute']['EUR']['Value'] / data['Valute']['EUR']['Nominal'],
                 'GBP': data['Valute']['GBP']['Value'] / data['Valute']['GBP']['Nominal'],
                 'CNY': data['Valute']['CNY']['Value'] / data['Valute']['CNY']['Nominal'],
+                'JPY': data['Valute']['JPY']['Value'] / data['Valute']['JPY']['Nominal'],
+                'CAD': data['Valute']['CAD']['Value'] / data['Valute']['CAD']['Nominal'],
+                'AUD': data['Valute']['AUD']['Value'] / data['Valute']['AUD']['Nominal'],
+                'CHF': data['Valute']['CHF']['Value'] / data['Valute']['CHF']['Nominal'],
                 'RUB': 1.0
             }
             cache['exchange_rates'] = rates
@@ -39,6 +43,10 @@ def get_exchange_rates():
                 'EUR': 105.0,
                 'GBP': 125.0,
                 'CNY': 13.5,
+                'JPY': 0.65,
+                'CAD': 70.0,
+                'AUD': 63.0,
+                'CHF': 110.0,
                 'RUB': 1.0
             }
             cache['exchange_rates'] = rates

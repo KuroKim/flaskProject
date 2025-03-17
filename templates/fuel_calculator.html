@@ -18,6 +18,10 @@
                     <option value="RUB">RUB</option>
                     <option value="USD">USD</option>
                     <option value="EUR">EUR</option>
+                    <option value="JPY">JPY</option>
+                    <option value="CAD">CAD</option>
+                    <option value="AUD">AUD</option>
+                    <option value="CHF">CHF</option>
                 </select>
                 <input type="number" id="price_per_liter" step="0.01" value="" oninput="calculateFuel()">
             </div>
@@ -27,6 +31,10 @@
                     <option value="RUB">RUB</option>
                     <option value="USD">USD</option>
                     <option value="EUR">EUR</option>
+                    <option value="JPY">JPY</option>
+                    <option value="CAD">CAD</option>
+                    <option value="AUD">AUD</option>
+                    <option value="CHF">CHF</option>
                 </select>
                 <input type="number" id="total_cost" step="0.01" value="" readonly>
             </div>
@@ -68,7 +76,11 @@
                 const currencySymbols = {
                     'RUB': '₽',
                     'USD': '$',
-                    'EUR': '€'
+                    'EUR': '€',
+                    'JPY': '¥',
+                    'CAD': 'C$',
+                    'AUD': 'A$',
+                    'CHF': 'CHF'
                 };
                 const symbol = currencySymbols[currency] || currency;
                 return `${formattedValue} ${symbol}`;

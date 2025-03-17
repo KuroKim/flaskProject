@@ -11,6 +11,10 @@
                     <option value="EUR">EUR</option>
                     <option value="GBP">GBP</option>
                     <option value="CNY">CNY</option>
+                    <option value="JPY">JPY</option>
+                    <option value="CAD">CAD</option>
+                    <option value="AUD">AUD</option>
+                    <option value="CHF">CHF</option>
                 </select>
                 <input type="number" id="from_value" step="0.01" value="" oninput="convertCurrency(true)">
             </div>
@@ -22,6 +26,10 @@
                     <option value="EUR">EUR</option>
                     <option value="GBP">GBP</option>
                     <option value="CNY">CNY</option>
+                    <option value="JPY">JPY</option>
+                    <option value="CAD">CAD</option>
+                    <option value="AUD">AUD</option>
+                    <option value="CHF">CHF</option>
                 </select>
                 <input type="number" id="to_value" step="0.01" value="" oninput="convertCurrency(false)">
             </div>
@@ -38,6 +46,18 @@
             {% endif %}
             {% if exchange_rates.CNY %}
             <p>1 CNY = {{ exchange_rates.CNY | round(2) }} RUB</p>
+            {% endif %}
+            {% if exchange_rates.JPY %}
+            <p>100 JPY = {{ exchange_rates.JPY | round(2) }} RUB</p>
+            {% endif %}
+            {% if exchange_rates.CAD %}
+            <p>1 CAD = {{ exchange_rates.CAD | round(2) }} RUB</p>
+            {% endif %}
+            {% if exchange_rates.AUD %}
+            <p>1 AUD = {{ exchange_rates.AUD | round(2) }} RUB</p>
+            {% endif %}
+            {% if exchange_rates.CHF %}
+            <p>1 CHF = {{ exchange_rates.CHF | round(2) }} RUB</p>
             {% endif %}
         </div>
     </div>
@@ -73,7 +93,11 @@
                 'USD': '$',
                 'EUR': '€',
                 'GBP': '£',
-                'CNY': '¥'
+                'CNY': '¥',
+                'JPY': '¥',
+                'CAD': 'C$',
+                'AUD': 'A$',
+                'CHF': 'CHF'
             };
             const symbol = currencySymbols[currency] || currency;
             return `${formattedValue} ${symbol}`;
@@ -93,12 +117,11 @@
                 toCurr = toCurrency.value;
             }
 
-            let result;
             if (isFromInput && fromVal !== 0) {
                 // Конвертация в RUB
                 let valueInRUB = fromCurr === 'RUB' ? fromVal : fromVal * exchangeRates[fromCurr];
                 // Конвертация из RUB в целевую валюту
-                result = valueInRUB / (toCurr === 'RUB' ? 1 : exchangeRates[toCurr]);
+                let result = valueInRUB / (toCurr === 'RUB' ? 1 : exchangeRates[toCurr]);
                 toValue.value = result.toFixed(2);
 
                 toValue.classList.add('updated');
@@ -107,7 +130,7 @@
                 // Конвертация в RUB
                 let valueInRUB = toCurr === 'RUB' ? toVal : toVal * exchangeRates[toCurr];
                 // Конвертация из RUB в исходную валюту
-                result = valueInRUB / (fromCurr === 'RUB' ? 1 : exchangeRates[fromCurr]);
+                let result = valueInRUB / (fromCurr === 'RUB' ? 1 : exchangeRates[fromCurr]);
                 fromValue.value = result.toFixed(2);
 
                 fromValue.classList.add('updated');
@@ -118,13 +141,13 @@
             debounceTimeout = setTimeout(() => {
                 if (isFromInput && fromVal !== 0) {
                     let valueInRUB = fromCurr === 'RUB' ? fromVal : fromVal * exchangeRates[fromCurr];
-                    result = valueInRUB / (toCurr === 'RUB' ? 1 : exchangeRates[toCurr]);
+                    let result = valueInRUB / (toCurr === 'RUB' ? 1 : exchangeRates[toCurr]);
                     let entry = `${formatNumber(fromVal, fromCurr)} = ${formatNumber(result, toCurr)}`;
                     addToHistory(entry);
                     saveHistory(entry);
                 } else if (!isFromInput && toVal !== 0) {
                     let valueInRUB = toCurr === 'RUB' ? toVal : toVal * exchangeRates[toCurr];
-                    result = valueInRUB / (fromCurr === 'RUB' ? 1 : exchangeRates[fromCurr]);
+                    let result = valueInRUB / (fromCurr === 'RUB' ? 1 : exchangeRates[fromCurr]);
                     let entry = `${formatNumber(toVal, toCurr)} = ${formatNumber(result, fromCurr)}`;
                     addToHistory(entry);
                     saveHistory(entry);
