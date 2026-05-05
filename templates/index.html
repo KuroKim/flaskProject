@@ -1,17 +1,70 @@
 {% extends "base.html" %}
 {% block title %}Главная{% endblock %}
 {% block content %}
-    <section class="search">
-        <input type="text" id="search-bar" placeholder="Поиск инструмента...">
+    <section class="home-intro">
+        <div>
+            <p class="section-label">Личный набор утилит</p>
+            <h1>Практичные инструменты для быстрых задач</h1>
+            <p class="intro-text">Конвертеры, расчеты и небольшие помощники без лишнего шума.</p>
+        </div>
+        <a href="/pressure_converter" class="pressure-callout">
+            <span class="callout-label">Быстрый доступ</span>
+            <strong>BAR ↔ PSI</strong>
+            <span>Открыть конвертер давления</span>
+        </a>
     </section>
-    <section class="tools-grid">
-        {% for tool in tools %}
-            <a href="{{ tool.url }}" class="tool-tile">
-                <span class="icon">{{ tool.icon }}</span>
-                <h2>{{ tool.name }}</h2>
-            </a>
-        {% endfor %}
-        <!-- Рекламный блок Яндекс.Директ -->
-        <div class="ad-block" style="width: 300px; height: 100px; background: #ccc;">Яндекс.Директ (300x100)</div>
+
+    <section class="featured-section" aria-labelledby="featured-title">
+        <div class="section-heading">
+            <div>
+                <p class="section-label">Быстрый доступ</p>
+                <h2 id="featured-title">Частые инструменты</h2>
+            </div>
+        </div>
+        <div class="featured-grid">
+            {% for tool in featured_tools %}
+                <a href="{{ tool.url }}" class="tool-tile featured-tile" data-tool-name="{{ tool.name | lower }} {{ tool.description | lower }}">
+                    <span class="icon">{{ tool.icon }}</span>
+                    <span class="tool-category">{{ tool.category }}</span>
+                    <h3>{{ tool.name }}</h3>
+                    <p>{{ tool.description }}</p>
+                </a>
+            {% endfor %}
+        </div>
+    </section>
+
+    <section class="ad-slot ad-slot-home" aria-label="Рекламное место">
+        <span>Место для мягкой рекламы Яндекс</span>
+    </section>
+
+    <section class="tools-section" aria-labelledby="tools-title">
+        <div class="section-heading">
+            <div>
+                <p class="section-label">Все утилиты</p>
+                <h2 id="tools-title">Инструменты по задачам</h2>
+            </div>
+            <div class="search">
+                <label for="search-bar">Поиск инструмента</label>
+                <input type="search" id="search-bar" placeholder="Например: валюты, QR, таймер">
+            </div>
+        </div>
+        <div class="category-list">
+            {% for group in tool_groups %}
+                <section class="tool-category-group" aria-labelledby="category-{{ loop.index }}">
+                    <h3 id="category-{{ loop.index }}">{{ group.name }}</h3>
+                    <div class="tools-grid compact-grid">
+                        {% for tool in group.tools %}
+                            <a href="{{ tool.url }}" class="tool-tile {% if tool.slug == 'pressure_converter' %}priority-tile{% endif %}" data-tool-name="{{ tool.name | lower }} {{ tool.description | lower }} {{ tool.category | lower }}">
+                                <span class="icon">{{ tool.icon }}</span>
+                                <span class="tool-category">{{ tool.category }}</span>
+                                <h3>{{ tool.name }}</h3>
+                                <p>{{ tool.description }}</p>
+                            </a>
+                        {% endfor %}
+                    </div>
+                </section>
+            {% endfor %}
+        </div>
+        <p class="empty-search" hidden>Ничего не найдено. Попробуйте другой запрос.</p>
     </section>
 {% endblock %}

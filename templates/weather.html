@@ -3,13 +3,19 @@
 {% block content %}
     <h1>Погода онлайн</h1>
     <form method="POST" class="tool-form">
-        <input type="text" name="city" placeholder="Введите город" required>
+        <label for="weather-city">Город</label>
+        <input type="text" id="weather-city" name="city" placeholder="Введите город" value="{{ city }}" required>
         <button type="submit">Узнать погоду</button>
     </form>
-    {% if weather_data %}
-        <div class="result">
-            <p>{{ weather_data.city }}: {{ weather_data.temp }}°C, {{ weather_data.description }}</p>
+    {% if error_message %}
+        <div class="result result-error">
+            <p>{{ error_message }}</p>
         </div>
     {% endif %}
-    <div class="ad-block" style="width: 320px; height: 50px; background: #ccc;">Яндекс.Директ (320x50)</div>
+    {% if weather_data %}
+        <div class="result">
+            <p><strong>{{ weather_data.city }}</strong></p>
+            <p>{{ weather_data.temp | round(1) }}°C, {{ weather_data.description }}</p>
+        </div>
+    {% endif %}
 {% endblock %}

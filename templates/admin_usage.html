@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% block title %}Популярность инструментов{% endblock %}
+{% block content %}
+    <section class="admin-panel">
+        <div class="section-heading">
+            <div>
+                <p class="section-label">Мини-статистика</p>
+                <h1>Популярность инструментов</h1>
+            </div>
+        </div>
+        <div class="usage-table-wrap">
+            <table class="usage-table">
+                <thead>
+                    <tr>
+                        <th>Инструмент</th>
+                        <th>Просмотры</th>
+                        <th>Последнее использование</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in stats %}
+                        <tr>
+                            <td>{{ item.tool_name }}</td>
+                            <td>{{ item.views }}</td>
+                            <td>{{ item.last_used_at or 'пока нет' }}</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </section>
+{% endblock %}

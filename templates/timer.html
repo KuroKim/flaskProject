@@ -4,9 +4,11 @@
     <h1>Таймер онлайн</h1>
     <div class="tool-form">
         <h3>Таймер</h3>
-        <input type="number" id="hours" placeholder="ч" min="0" style="width: 60px;">
-        <input type="number" id="minutes" placeholder="мин" min="0" max="59" style="width: 60px;">
-        <input type="number" id="seconds" placeholder="сек" min="0" max="59" style="width: 60px;">
+        <div class="time-inputs">
+            <label>Часы<input type="number" id="hours" placeholder="ч" min="0"></label>
+            <label>Минуты<input type="number" id="minutes" placeholder="мин" min="0" max="59"></label>
+            <label>Секунды<input type="number" id="seconds" placeholder="сек" min="0" max="59"></label>
+        </div>
         <button onclick="startTimer()">Старт</button>
         <button onclick="pauseTimer()">Пауза</button>
         <button onclick="resetTimer()">Сброс</button>
@@ -19,8 +21,6 @@
         <button onclick="resetStopwatch()">Сброс</button>
         <div class="result" id="stopwatch-display">00:00:00</div>
     </div>
-    <div class="ad-block" style="width: 320px; height: 50px; background: #ccc;">Яндекс.Директ (320x50)</div>
-
     <script>
         let timerInterval, stopwatchInterval;
         let timerSeconds = 0, stopwatchSeconds = 0;

@@ -5,7 +5,8 @@
     <div class="currency-converter">
         <div class="converter-form">
             <div class="unit-block">
-                <select id="from_currency" onchange="convertCurrency(true)">
+                <label for="from_currency">Из валюты</label>
+                <select id="from_currency" onchange="convertUsingActiveInput()">
                     <option value="RUB">RUB</option>
                     <option value="USD">USD</option>
                     <option value="EUR">EUR</option>
@@ -16,11 +17,12 @@
                     <option value="AUD">AUD</option>
                     <option value="CHF">CHF</option>
                 </select>
-                <input type="number" id="from_value" step="0.01" value="" oninput="convertCurrency(true)">
+                <input type="number" id="from_value" step="0.01" value="" oninput="convertCurrency(true)" aria-label="Исходная сумма">
             </div>
             <span class="arrow">↔</span>
             <div class="unit-block">
-                <select id="to_currency" onchange="convertCurrency(false)">
+                <label for="to_currency">В валюту</label>
+                <select id="to_currency" onchange="convertUsingActiveInput()">
                     <option value="USD">USD</option>
                     <option value="RUB">RUB</option>
                     <option value="EUR">EUR</option>
@@ -31,7 +33,7 @@
                     <option value="AUD">AUD</option>
                     <option value="CHF">CHF</option>
                 </select>
-                <input type="number" id="to_value" step="0.01" value="" oninput="convertCurrency(false)">
+                <input type="number" id="to_value" step="0.01" value="" oninput="convertCurrency(false)" aria-label="Сконвертированная сумма">
             </div>
         </div>
         <div class="controls">
@@ -66,8 +68,6 @@
         <button class="clear-history" onclick="clearHistory()">Очистить историю</button>
         <ul id="history-list"></ul>
     </div>
-    <div class="ad-block" style="width: 320px; height: 50px; background: #ccc;">Яндекс.Директ (320x50)</div>
-
     <script>
         let fromValue = document.getElementById('from_value');
         let toValue = document.getElementById('to_value');
@@ -75,6 +75,7 @@
         let toCurrency = document.getElementById('to_currency');
         let historyList = document.getElementById('history-list');
         let debounceTimeout;
+        let activeInput = 'from';
 
         // Используем курсы, переданные сервером
         let exchangeRates = {{ exchange_rates | tojson }};
@@ -105,22 +106,33 @@
         }
 
         function convertCurrency(isFromInput) {
-            let fromVal = parseFloat(fromValue.value) || 0;
-            let toVal = parseFloat(toValue.value) || 0;
+            activeInput = isFromInput ? 'from' : 'to';
+            let fromVal = parseFloat(fromValue.value);
+            let toVal = parseFloat(toValue.value);
             let fromCurr = fromCurrency.value;
             let toCurr = toCurrency.value;
 
             // Блокируем конвертацию, если валюты совпадают
-            if (fromCurr === toCurr && (fromVal !== 0 || toVal !== 0)) {
-                let options = fromCurrency.options;
-                let currentIndex = fromCurrency.selectedIndex;
+            if (fromCurr === toCurr && (!isNaN(fromVal) || !isNaN(toVal))) {
+                let options = isFromInput ? fromCurrency.options : toCurrency.options;
+                let currentIndex = isFromInput ? fromCurrency.selectedIndex : toCurrency.selectedIndex;
                 let nextIndex = (currentIndex + 1) % options.length;
-                toCurrency.selectedIndex = nextIndex;
+                if (isFromInput) {
+                    toCurrency.selectedIndex = nextIndex;
+                } else {
+                    fromCurrency.selectedIndex = nextIndex;
+                }
+                fromCurr = fromCurrency.value;
                 toCurr = toCurrency.value;
             }
 
             let result;
-            if (isFromInput && fromVal !== 0) {
+            if (isFromInput) {
+                if (isNaN(fromVal) || fromVal === 0) {
+                    toValue.value = '';
+                    clearTimeout(debounceTimeout);
+                    return;
+                }
                 // Конвертация из fromVal в toCurr
                 let valueInRUB = fromCurr === 'RUB' ? fromVal : fromVal * exchangeRates[fromCurr];
                 console.log(`fromVal: ${fromVal}, fromCurr: ${fromCurr}, valueInRUB: ${valueInRUB}`);
@@ -146,33 +158,12 @@
                         saveHistory(entry);
                     }
                 }, 500);
-            } else if (!isFromInput && fromVal !== 0) {
-                // Смена to_currency — пересчитываем только toValue на основе fromVal
-                let valueInRUB = fromCurr === 'RUB' ? fromVal : fromVal * exchangeRates[fromCurr];
-                console.log(`fromVal: ${fromVal}, fromCurr: ${fromCurr}, valueInRUB: ${valueInRUB}`);
-                result = valueInRUB / (toCurr === 'RUB' ? 1 : exchangeRates[toCurr]);
-                console.log(`result: ${result}, toCurr: ${toCurr}, exchangeRates[${toCurr}]: ${exchangeRates[toCurr]}`);
-                toValue.value = result.toFixed(2);
-
-                toValue.classList.add('updated');
-                setTimeout(() => toValue.classList.remove('updated'), 300);
-
-                // Сохраняем значения для истории
-                const historyFromVal = fromVal;
-                const historyToVal = result;
-                const historyFromCurr = fromCurr;
-                const historyToCurr = toCurr;
-
-                clearTimeout(debounceTimeout);
-                debounceTimeout = setTimeout(() => {
-                    console.log(`Запись в историю: fromVal=${historyFromVal}, toVal=${historyToVal}, fromCurr=${historyFromCurr}, toCurr=${historyToCurr}`);
-                    if (historyFromVal !== 0 && historyToVal !== 0) {
-                        let entry = `${formatNumber(historyFromVal, historyFromCurr)} = ${formatNumber(historyToVal, historyToCurr)}`;
-                        addToHistory(entry);
-                        saveHistory(entry);
-                    }
-                }, 500);
-            } else if (!isFromInput && toVal !== 0) {
+            } else {
+                if (isNaN(toVal) || toVal === 0) {
+                    fromValue.value = '';
+                    clearTimeout(debounceTimeout);
+                    return;
+                }
                 // Конвертация из toVal в fromCurr (только при вводе в to_value)
                 let valueInRUB = toCurr === 'RUB' ? toVal : toVal * exchangeRates[toCurr];
                 console.log(`toVal: ${toVal}, toCurr: ${toCurr}, valueInRUB: ${valueInRUB}`);
@@ -201,9 +192,14 @@
             }
         }
 
+        function convertUsingActiveInput() {
+            convertCurrency(activeInput === 'from');
+        }
+
         function clearFields() {
             fromValue.value = '';
             toValue.value = '';
+            activeInput = 'from';
             clearTimeout(debounceTimeout);
         }
 

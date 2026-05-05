@@ -3,8 +3,8 @@
 {% block content %}
     <h1>Создать QR-код онлайн</h1>
     <form method="POST" class="tool-form">
-        <input type="text" name="text" placeholder="Введите текст или URL" required>
+        <label for="qr-text">Текст или URL</label>
+        <input type="text" id="qr-text" name="text" placeholder="Введите текст или URL" required>
         <button type="submit">Сгенерировать и скачать</button>
     </form>
-    <div class="ad-block" style="width: 320px; height: 50px; background: #ccc;">Яндекс.Директ (320x50)</div>
 {% endblock %}

@@ -7,37 +7,61 @@
     <meta name="description" content="Удобные онлайн-инструменты для повседневного использования">
     <meta name="keywords" content="калькулятор, конвертер, таймер, погода, QR-код, калькулятор бензина">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
-    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500&display=swap" rel="stylesheet">
 </head>
 <body>
-    <header>
+    <header class="site-header">
         <div class="header-container">
-            <h1><a href="/" class="home-link">Полезные инструменты</a></h1>
-            <button class="menu-toggle">☰</button>
-            <nav class="nav-menu">
+            <div class="brand">
+                <a href="/" class="home-link">Полезные инструменты</a>
+                <span class="brand-note">повседневные онлайн-утилиты</span>
+            </div>
+            <a href="/pressure_converter" class="priority-link">BAR ↔ PSI</a>
+            <button class="menu-toggle" type="button" aria-expanded="false" aria-controls="primary-navigation">☰</button>
+            <nav class="nav-menu" id="primary-navigation" aria-label="Основная навигация">
                 <ul>
-                    <li><a href="/">Главная</a></li>
-                    <li><a href="/calculator">Калькулятор</a></li>
-                    <li><a href="/currency">Конвертер валют</a></li>
-                    <li><a href="/converter">Конвертер величин</a></li>
-                    <li><a href="/pressure_converter">BAR ↔ PSI</a></li>
-                    <li><a href="/timer">Таймер</a></li>
-                    <li><a href="/weather">Погода</a></li>
-                    <li><a href="/qr-code">QR-код</a></li>
-                    <li><a href="/fuel-calculator">Калькулятор бензина</a></li>
+                    <li><a href="/" class="{% if not current_tool and request.path == '/' %}active{% endif %}">Главная</a></li>
+                    {% for tool in nav_tools %}
+                        <li>
+                            <a href="{{ tool.url }}" class="{% if current_tool and current_tool.slug == tool.slug %}active{% endif %}">
+                                {{ tool.name }}
+                            </a>
+                        </li>
+                    {% endfor %}
                 </ul>
             </nav>
             <div class="theme-switcher">
-                <button id="theme-toggle">Тёмная тема</button>
+                <button id="theme-toggle" type="button">Тёмная тема</button>
             </div>
         </div>
     </header>
-    <main>
-        {% block content %}{% endblock %}
+    <main class="site-main">
+        <div class="page-container">
+            {% block content %}{% endblock %}
+
+            {% if current_tool %}
+                <section class="related-tools" aria-labelledby="related-tools-title">
+                    <div>
+                        <p class="section-label">Быстрый переход</p>
+                        <h2 id="related-tools-title">Похожие инструменты</h2>
+                    </div>
+                    <div class="related-list">
+                        {% for tool in related_tools %}
+                            <a href="{{ tool.url }}" class="related-link">
+                                <span>{{ tool.icon }}</span>
+                                {{ tool.name }}
+                            </a>
+                        {% endfor %}
+                    </div>
+                </section>
+                <section class="ad-slot ad-slot-tool" aria-label="Рекламное место">
+                    <span>Место для мягкой рекламы Яндекс</span>
+                </section>
+            {% endif %}
+        </div>
     </main>
-    <footer>
-        <p>Понравился сайт? <a href="#" class="donate-btn">Поддержать</a></p>
-        <p><a href="#">Предложить инструмент</a></p>
+    <footer class="site-footer">
+        <p>Полезные инструменты для регулярного личного использования.</p>
+        <p><a href="/">Все инструменты</a></p>
     </footer>
     <script src="{{ url_for('static', filename='js/script.js') }}"></script>
 </body>
