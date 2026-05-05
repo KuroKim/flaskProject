@@ -31,10 +31,11 @@
         <div class="controls">
             <button onclick="clearFields()">Очистить</button>
         </div>
-        <div class="presets">
-            <button onclick="setPreset(2, 'bar')">2 BAR</button>
-            <button onclick="setPreset(30, 'psi')">30 PSI</button>
-            <button onclick="setPreset(1, 'atm')">1 ATM</button>
+        <div class="presets" aria-label="Быстрые примеры">
+            <span class="presets-label">Быстрые примеры</span>
+            <button type="button" onclick="setPreset(2, 'bar')">2 BAR</button>
+            <button type="button" onclick="setPreset(30, 'psi')">30 PSI</button>
+            <button type="button" onclick="setPreset(1, 'atm')">1 ATM</button>
         </div>
         <div class="info">
             <h3>О единицах давления</h3>
@@ -64,7 +65,7 @@
             mmhg: 0.00133322
         };
 
-        function convertPressure(isFromInput) {
+        function convertPressure(isFromInput, preserveTargetUnit = false) {
             let fromVal = parseFloat(fromValue.value) || 0;
             let toVal = parseFloat(toValue.value) || 0;
 
@@ -85,7 +86,7 @@
                 fromValue.classList.remove('updated');
             }, 300);
 
-            if (fromUnit.value === toUnit.value && (fromVal !== 0 || toVal !== 0)) {
+            if (!preserveTargetUnit && fromUnit.value === toUnit.value && (fromVal !== 0 || toVal !== 0)) {
                 let units = Object.keys(conversionFactors);
                 let currentIndex = units.indexOf(fromUnit.value);
                 let nextIndex = (currentIndex + 1) % units.length;
@@ -114,7 +115,7 @@
         function setPreset(value, unit) {
             fromValue.value = value;
             fromUnit.value = unit;
-            convertPressure(true);
+            convertPressure(true, true);
         }
 
         function clearFields() {

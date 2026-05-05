@@ -508,6 +508,15 @@ p {
     background: var(--accent);
 }
 
+.presets-label {
+    display: flex;
+    align-items: center;
+    min-height: 42px;
+    color: var(--muted);
+    font-size: 13px;
+    font-weight: 650;
+}
+
 .info {
     margin-top: 16px;
     padding: 14px;
