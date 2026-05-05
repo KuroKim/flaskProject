@@ -1,4 +1,40 @@
+# Python
 __pycache__/
 *.py[cod]
+*.pyo
+*.pyd
+
+# Virtual environments
+.venv/
+venv/
+env/
+
+# IDE
+.idea/
+.vscode/
+
+# Runtime / local data
 data/*.sqlite3
 data/*.sqlite3-*
+*.db
+*.sqlite
+*.sqlite3
+
+# Caches
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.cache/
+
+# Coverage / reports
+.coverage
+.coverage.*
+htmlcov/
+
+# Environment files
+.env
+.env.*
+
+# OS junk
+.DS_Store
+Thumbs.db
